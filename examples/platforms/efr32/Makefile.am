@@ -41,7 +41,7 @@ override CXXFLAGS                            := $(filter-out -pedantic-errors,$(
 EFR32MG_SDK_SRCDIR                            = $(top_srcdir)/third_party/silabs/gecko_sdk_suite/v1.1
 
 libopenthread_efr32_a_CPPFLAGS                                                = \
-    -DEFR32MG12P432F1024GL125                                                   \
+    -DEFR32MG12P332F1024GL125                                                   \
     -D__START=main                                                              \
     -D__STARTUP_CLEAR_BSS                                                       \
     -I$(top_srcdir)/include                                                     \
@@ -53,7 +53,7 @@ libopenthread_efr32_a_CPPFLAGS                                                = 
     -I$(EFR32MG_SDK_SRCDIR)/platform/radio/rail_lib/chip/efr32/rf/common/cortex \
     -I$(EFR32MG_SDK_SRCDIR)/platform/radio/rail_lib/hal/efr32                   \
     -I$(EFR32MG_SDK_SRCDIR)/hardware/kit/common/bsp                             \
-    -I$(EFR32MG_SDK_SRCDIR)/hardware/kit/EFR32MG12_BRD4161A/config              \
+    -I$(EFR32MG_SDK_SRCDIR)/hardware/kit/EFR32MG1_BRD4160A/config              \
     -I$(EFR32MG_SDK_SRCDIR)/platform/CMSIS/Include                              \
     -I$(EFR32MG_SDK_SRCDIR)/platform/Device/SiliconLabs/EFR32MG12P/Include      \
     -I$(EFR32MG_SDK_SRCDIR)/platform/emdrv/common/inc                           \
