@@ -69,7 +69,7 @@ const otExtAddress *otLinkGetExtendedAddress(otInstance *aInstance)
 {
     Instance &instance = *static_cast<Instance *>(aInstance);
 
-    return reinterpret_cast<const otExtAddress *>(instance.GetThreadNetif().GetMac().GetExtAddress());
+    return &instance.GetThreadNetif().GetMac().GetExtAddress();
 }
 
 otError otLinkSetExtendedAddress(otInstance *aInstance, const otExtAddress *aExtAddress)
@@ -357,4 +357,18 @@ bool otLinkIsInTransmitState(otInstance *aInstance)
     Instance &instance = *static_cast<Instance *>(aInstance);
 
     return instance.GetThreadNetif().GetMac().IsInTransmitState();
+}
+
+otError otLinkOutOfBandTransmitRequest(otInstance *aInstance, otRadioFrame *aOobFrame)
+{
+    Instance &instance = *static_cast<Instance *>(aInstance);
+
+    return instance.GetThreadNetif().GetMac().SendOutOfBandFrameRequest(aOobFrame);
+}
+
+uint16_t otLinkGetCcaFailureRate(otInstance *aInstance)
+{
+    Instance &instance = *static_cast<Instance *>(aInstance);
+
+    return instance.GetThreadNetif().GetMac().GetCcaFailureRate();
 }

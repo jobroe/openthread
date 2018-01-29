@@ -55,6 +55,7 @@ Instance::Instance(void) :
     mActiveScanCallbackContext(NULL),
     mEnergyScanCallback(NULL),
     mEnergyScanCallbackContext(NULL),
+    mNotifier(*this),
     mTimerMilliScheduler(*this),
 #if OPENTHREAD_CONFIG_ENABLE_PLATFORM_USEC_TIMER
     mTimerMicroScheduler(*this),
@@ -69,6 +70,9 @@ Instance::Instance(void) :
 #endif
 #if OPENTHREAD_CONFIG_ENABLE_DYNAMIC_LOG_LEVEL
     mLogLevel(static_cast<otLogLevel>(OPENTHREAD_CONFIG_LOG_LEVEL)),
+#endif
+#if OPENTHREAD_ENABLE_CHANNEL_MONITOR
+    mChannelMonitor(*this),
 #endif
     mMessagePool(*this),
     mIsInitialized(false)
@@ -161,36 +165,6 @@ exit:
     return;
 }
 
-otError Instance::RegisterStateChangedCallback(otStateChangedCallback aCallback, void *aContext)
-{
-    otError error = OT_ERROR_NO_BUFS;
-
-    for (size_t i = 0; i < kMaxNetifCallbacks; i++)
-    {
-        if (mNetifCallback[i].IsFree())
-        {
-            mNetifCallback[i].Set(aCallback, aContext);
-            error = mThreadNetif.RegisterCallback(mNetifCallback[i]);
-            break;
-        }
-    }
-
-    return error;
-}
-
-void Instance::RemoveStateChangedCallback(otStateChangedCallback aCallback, void *aContext)
-{
-    for (size_t i = 0; i < kMaxNetifCallbacks; i++)
-    {
-        if (mNetifCallback[i].IsServing(aCallback, aContext))
-        {
-            mThreadNetif.RemoveCallback(mNetifCallback[i]);
-            mNetifCallback[i].Free();
-            break;
-        }
-    }
-}
-
 void Instance::Reset(void)
 {
     otPlatReset(this);
@@ -242,6 +216,11 @@ void Instance::InvokeEnergyScanCallback(otEnergyScanResult *aResult) const
 }
 
 // Specializations of the `Get<Type>()` method.
+
+template<> Notifier &Instance::Get(void)
+{
+    return GetNotifier();
+}
 
 template<> TaskletScheduler &Instance::Get(void)
 {
@@ -416,4 +395,11 @@ template<> Utils::SupervisionListener &Instance::Get(void)
     return GetThreadNetif().GetSupervisionListener();
 }
 
-} // namespance ot
+#if OPENTHREAD_ENABLE_CHANNEL_MONITOR
+template<> Utils::ChannelMonitor &Instance::Get(void)
+{
+    return GetChannelMonitor();
+}
+#endif
+
+} // namespace ot

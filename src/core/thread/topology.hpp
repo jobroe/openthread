@@ -46,6 +46,8 @@
 
 namespace ot {
 
+class Instance;
+
 /**
  * This class represents a Thread neighbor.
  *
@@ -250,7 +252,7 @@ public:
      * @returns The RLOC16 value.
      *
      */
-    uint16_t GetRloc16(void) const { return mValidPending.mValid.mRloc16; }
+    uint16_t GetRloc16(void) const { return mRloc16; }
 
     /**
      * This method sets the RLOC16 value.
@@ -258,7 +260,7 @@ public:
      * @param[in]  aRloc16  The RLOC16 value.
      *
      */
-    void SetRloc16(uint16_t aRloc16) { mValidPending.mValid.mRloc16 = aRloc16; }
+    void SetRloc16(uint16_t aRloc16) { mRloc16 = aRloc16; }
 
     /**
      * This method indicates whether an IEEE 802.15.4 Data Request message was received.
@@ -335,16 +337,15 @@ private:
         {
             uint32_t mLinkFrameCounter;  ///< The Link Frame Counter
             uint32_t mMleFrameCounter;   ///< The MLE Frame Counter
-            uint16_t mRloc16;            ///< The RLOC16
         } mValid;
         struct
         {
             uint8_t mChallenge[Mle::ChallengeTlv::kMaxSize];  ///< The challenge value
-            uint8_t mChallengeLength;    ///< The challenge length
         } mPending;
     } mValidPending;
 
     uint32_t        mKeySequence;        ///< Current key sequence
+    uint16_t        mRloc16;             ///< The RLOC16
     uint8_t         mState : 3;          ///< The link state
     uint8_t         mMode : 4;           ///< The MLE device mode
     bool            mDataRequest : 1;    ///< Indicates whether or not a Data Poll was received
@@ -361,58 +362,126 @@ class Child : public Neighbor
 public:
     enum
     {
-        kMaxIp6AddressPerChild = OPENTHREAD_CONFIG_IP_ADDRS_PER_CHILD,
         kMaxRequestTlvs        = 5,
     };
 
     /**
-     * This method clears the IPv6 addresses for the child.
+     * This class defines an iterator used by `GetNextIp6Address()` to go through IPv6 address entries of a child.
      *
      */
-    void ClearIp6Addresses(void) { memset(mIp6Address, 0, sizeof(mIp6Address)); }
+    class Ip6AddressIterator
+    {
+        friend class Child;
+
+    public:
+
+        /**
+         * This constructor initializes the iterator object.
+         *
+         * After initialization a call to `GetNextIp6Address()` would start at the first IPv6 address entry in the list.
+         *
+         */
+        Ip6AddressIterator(void): mIndex(0) { }
+
+        /**
+         * This method resets the iterator.
+         *
+         * After reset the next call to `GetNextIp6Address()` would start at the first IPv6 address entry in the list.
+         *
+         */
+        void Reset(void) { mIndex = 0; }
+
+        /**
+         * This method sets the iterator from an `otChildIp6AddressIterator`
+         *
+         * @param[in]   aChildAddressIterator  A child address iterator
+         *
+         */
+        void Set(otChildIp6AddressIterator aChildAddressIterator) { mIndex = aChildAddressIterator; }
+
+        /**
+         * This method returns the iterator as an `otChildIp6AddressIterator`
+         *
+         * @returns The iterator as an `otChildIp6AddressIterator`
+         *
+         */
+        otChildIp6AddressIterator Get(void) const { return mIndex; }
+
+    private:
+        void Increment(void) { mIndex++; }
+
+        otChildIp6AddressIterator mIndex;
+    };
 
     /**
-     * This method gets the IPv6 address array.
-     *
-     * The array contains `kMaxIp6AddressPerChild` entries. Unused address entries contain unspecified address (all
-     * zeros).
-     *
-     * @returns A pointer to the first entry of IPv6 address array.
+     * This method clears the IPv6 address list for the child.
      *
      */
-    const Ip6::Address *GetIp6Addresses(void) const { return mIp6Address; }
+    void ClearIp6Addresses(void);
 
     /**
-     * This method gets the IPv6 address at index @p aIndex.
+     * This method gets the mesh-local IPv6 address.
      *
-     * @param[in]  aIndex  The index into the IPv6 address array.
+     * @param[in]    aInstance           A reference to the OpenThread instance.
+     * @param[out]   aAddress            A reference to an IPv6 address to provide address (if any).
      *
-     * @returns A reference to the IPv6 address entry at index @p aIndex.
+     * @retval       OT_ERROR_NONE       Successfully found the mesh-local address and updated @p aAddress.
+     * @retval       OT_ERROR_NOT_FOUND  No mesh-local IPv6 address in the IPv6 address list.
      *
      */
-    Ip6::Address &GetIp6Address(uint8_t aIndex) { return mIp6Address[aIndex]; }
+    otError GetMeshLocalIp6Address(Instance &aInstance, Ip6::Address &aAddress) const;
 
     /**
-     * This method searches for a given IPv6 address in the child's IPv6 address array and provides the index of the
-     * address in the array if it is found.
+     * This method gets the next IPv6 address in the list.
      *
-     * @param[in]  aAddress           The IPv6 address to search for in the IPv6 address array.
-     * @param[out] aIndex             Pointer to variable where the index of address is provided if address is found in
-     *                                the array. @p aIndex can be set NULL if index is not required.
+     * @param[in]    aInstance           A reference to the OpenThread instance.
+     * @param[inout] aIterator           A reference to an IPv6 address iterator.
+     * @param[out]   aAddress            A reference to an IPv6 address to provide the next address (if any).
      *
-     * @retval OT_ERROR_NONE          Successfully found the address in IPv6 address array and updated @p aIndex.
-     * @retval OT_ERROR_NOT_FOUND     Could not find the address in the array.
+     * @retval       OT_ERROR_NONE       Successfully found the next address and updated @p aAddress and @p aIterator.
+     * @retval       OT_ERROR_NOT_FOUND  No subsequent IPv6 address exists in the IPv6 address list.
      *
      */
-    otError FindIp6Address(const Ip6::Address &aAddress, uint8_t *aIndex) const;
+    otError GetNextIp6Address(Instance &aInstance, Ip6AddressIterator &aIterator, Ip6::Address &aAddress) const;
 
     /**
-     * This method removes the address at index @p aIndex.
+     * This method adds an IPv6 address to the list.
      *
-     * @param[in] aIndex   The index into the IPv6 address array.
+     * @param[in]  aInstance          A reference to the OpenThread instance.
+     * @param[in]  aAddress           A reference to IPv6 address to be added.
+     *
+     * @retval OT_ERROR_NONE          Successfully added the new address.
+     * @retval OT_ERROR_ALREADY       Address is already in the list.
+     * @retval OT_ERROR_NO_BUFS       Already at maximum number of addresses. No entry available to add the new address.
+     * @retval OT_ERROR_INVALID_ARGS  Address is invalid (it is the Unspecified Address).
      *
      */
-    void RemoveIp6Address(uint8_t aIndex);
+    otError AddIp6Address(Instance &aInstance, const Ip6::Address &aAddress);
+
+    /**
+     * This method removes an IPv6 address from the list.
+     *
+     * @param[in]  aInstance              A reference to the OpenThread instance.
+     * @param[in]  aAddress               A reference to IPv6 address to be removed.
+     *
+     * @retval OT_ERROR_NONE              Successfully removed the address.
+     * @retval OT_ERROR_NOT_FOUND         Address was not found in the list.
+     * @retval OT_ERROR_INVALID_ARGS      Address is invalid (it is the Unspecified Address).
+     *
+     */
+    otError RemoveIp6Address(Instance &aInstance, const Ip6::Address &aAddress);
+
+    /**
+     * This method indicates whether an IPv6 address is in the list of IPv6 addresses of the child.
+     *
+     * @param[in]  aInstance  A reference to the OpenThread instance.
+     * @param[in]  aAddress   A reference to IPv6 address.
+     *
+     * @retval TRUE           The address exists on the list.
+     * @retval FALSE          Address was not found in the list.
+     *
+     */
+    bool HasIp6Address(Instance &aInstance, const Ip6::Address &aAddress) const;
 
     /**
      * This method gets the child timeout.
@@ -686,8 +755,20 @@ public:
 #endif // #if OPENTHREAD_ENABLE_CHILD_SUPERVISION
 
 private:
-    Ip6::Address mIp6Address[kMaxIp6AddressPerChild];  ///< Registered IPv6 addresses
-    uint32_t     mTimeout;                             ///< Child timeout
+
+#if OPENTHREAD_CONFIG_IP_ADDRS_PER_CHILD < 2
+#error OPENTHREAD_CONFIG_IP_ADDRS_PER_CHILD should be at least set to 2.
+#endif
+
+    enum
+    {
+        kNumIp6Addresses = OPENTHREAD_CONFIG_IP_ADDRS_PER_CHILD - 1,
+    };
+
+    uint8_t      mMeshLocalIid[Ip6::Address::kInterfaceIdentifierSize];   ///< IPv6 address IID for mesh-local address
+    Ip6::Address mIp6Address[kNumIp6Addresses];  ///< Registered IPv6 addresses
+
+    uint32_t     mTimeout;                       ///< Child timeout
 
     union
     {

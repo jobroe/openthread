@@ -208,6 +208,23 @@ otError Ip6::InsertMplOption(Message &aMessage, Header &aIp6Header, MessageInfo 
     }
     else
     {
+        if (aIp6Header.GetDestination().IsMulticastLargerThanRealmLocal() &&
+            GetInstance().GetThreadNetif().GetMle().HasSleepyChildrenSubscribed(aIp6Header.GetDestination()))
+        {
+            Message *messageCopy = NULL;
+
+            if ((messageCopy = aMessage.Clone()) != NULL)
+            {
+                HandleDatagram(*messageCopy, NULL, aMessageInfo.GetInterfaceId(), NULL, true);
+                otLogInfoIp6(GetInstance(), "Message copy for indirect transmission to sleepy children");
+            }
+            else
+            {
+                otLogWarnIp6(GetInstance(),
+                             "No enough buffer for message copy for indirect transmission to sleepy children");
+            }
+        }
+
         SuccessOrExit(error = AddTunneledMplOption(aMessage, aIp6Header, aMessageInfo));
     }
 
@@ -371,12 +388,6 @@ otError Ip6::SendDatagram(Message &aMessage, MessageInfo &aMessageInfo, IpProto 
 
     SuccessOrExit(error = aMessage.Prepend(&header, sizeof(header)));
 
-    if (aMessageInfo.GetPeerAddr().IsMulticast() &&
-        aMessageInfo.GetPeerAddr().GetScope() > Address::kRealmLocalScope)
-    {
-        SuccessOrExit(error = AddTunneledMplOption(aMessage, header, aMessageInfo));
-    }
-
     // compute checksum
     checksum = ComputePseudoheaderChecksum(header.GetSource(), header.GetDestination(),
                                            payloadLength, aIpProto);
@@ -393,6 +404,28 @@ otError Ip6::SendDatagram(Message &aMessage, MessageInfo &aMessageInfo, IpProto 
 
     default:
         break;
+    }
+
+    if (aMessageInfo.GetPeerAddr().IsMulticastLargerThanRealmLocal())
+    {
+        if (GetInstance().GetThreadNetif().GetMle().HasSleepyChildrenSubscribed(header.GetDestination()))
+        {
+            Message *messageCopy = NULL;
+
+            if ((messageCopy = aMessage.Clone()) != NULL)
+            {
+                otLogInfoIp6(GetInstance(), "Message copy for indirect transmission to sleepy children");
+                messageCopy->SetInterfaceId(aMessageInfo.GetInterfaceId());
+                EnqueueDatagram(*messageCopy);
+            }
+            else
+            {
+                otLogWarnIp6(GetInstance(),
+                             "No enough buffer for message copy for indirect transmission to sleepy children");
+            }
+        }
+
+        SuccessOrExit(error = AddTunneledMplOption(aMessage, header, aMessageInfo));
     }
 
 exit:
@@ -706,13 +739,6 @@ otError Ip6::HandleDatagram(Message &aMessage, Netif *aNetif, int8_t aInterfaceI
     uint8_t hopLimit;
     int8_t forwardInterfaceId;
 
-    otLogFuncEntry();
-
-#if 0
-    uint8_t buf[1024];
-    aMessage.Read(0, sizeof(buf), buf);
-    dump("handle datagram", buf, aMessage.GetLength());
-#endif
 
     SuccessOrExit(error = header.Init(aMessage));
 
@@ -734,6 +760,12 @@ otError Ip6::HandleDatagram(Message &aMessage, Netif *aNetif, int8_t aInterfaceI
             else if (aNetif->IsMulticastPromiscuousEnabled())
             {
                 multicastPromiscuous = true;
+            }
+
+            if (header.GetDestination().IsMulticastLargerThanRealmLocal() &&
+                GetInstance().GetThreadNetif().GetMle().HasSleepyChildrenSubscribed(header.GetDestination()))
+            {
+                forward = true;
             }
         }
         else
@@ -833,15 +865,12 @@ exit:
         aMessage.Free();
     }
 
-    otLogFuncExitErr(error);
     return error;
 }
 
 int8_t Ip6::FindForwardInterfaceId(const MessageInfo &aMessageInfo)
 {
     int8_t interfaceId;
-
-    otLogFuncEntry();
 
     if (aMessageInfo.GetSockAddr().IsMulticast())
     {
@@ -867,8 +896,6 @@ int8_t Ip6::FindForwardInterfaceId(const MessageInfo &aMessageInfo)
     {
         interfaceId = 0;
     }
-
-    otLogFuncExit();
 
     return interfaceId;
 }

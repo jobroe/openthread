@@ -47,6 +47,11 @@ using ot::Encoding::BigEndian::HostSwap32;
 namespace ot {
 namespace Ip6 {
 
+void Address::Clear(void)
+{
+    memset(mFields.m8, 0, sizeof(mFields));
+}
+
 bool Address::IsUnspecified(void) const
 {
     return (mFields.m32[0] == 0 && mFields.m32[1] == 0 && mFields.m32[2] == 0 && mFields.m32[3] == 0);
@@ -87,6 +92,11 @@ bool Address::IsLinkLocalAllRoutersMulticast(void) const
 bool Address::IsRealmLocalMulticast(void) const
 {
     return IsMulticast() && (GetScope() == kRealmLocalScope);
+}
+
+bool Address::IsMulticastLargerThanRealmLocal(void) const
+{
+    return IsMulticast() && (GetScope() > kRealmLocalScope);
 }
 
 bool Address::IsRealmLocalAllNodesMulticast(void) const
@@ -135,7 +145,6 @@ bool Address::IsIidReserved(void) const
 {
     return IsSubnetRouterAnycast() || IsReservedSubnetAnycast() || IsAnycastRoutingLocator();
 }
-
 
 const uint8_t *Address::GetIid(void) const
 {

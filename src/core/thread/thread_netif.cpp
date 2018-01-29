@@ -126,6 +126,9 @@ otError ThreadNetif::Up(void)
 #if OPENTHREAD_ENABLE_DNS_CLIENT
         mDnsClient.Start();
 #endif
+#if OPENTHREAD_ENABLE_CHANNEL_MONITOR
+        GetInstance().GetChannelMonitor().Start();
+#endif
         mChildSupervisor.Start();
         mMleRouter.Enable();
         mIsUp = true;
@@ -139,6 +142,9 @@ otError ThreadNetif::Down(void)
     mCoap.Stop();
 #if OPENTHREAD_ENABLE_DNS_CLIENT
     mDnsClient.Stop();
+#endif
+#if OPENTHREAD_ENABLE_CHANNEL_MONITOR
+    GetInstance().GetChannelMonitor().Stop();
 #endif
     mChildSupervisor.Stop();
     mMleRouter.Disable();
@@ -159,7 +165,7 @@ otError ThreadNetif::GetLinkAddress(Ip6::LinkAddress &address) const
 {
     address.mType = Ip6::LinkAddress::kEui64;
     address.mLength = sizeof(address.mExtAddress);
-    memcpy(&address.mExtAddress, mMac.GetExtAddress(), address.mLength);
+    address.mExtAddress = mMac.GetExtAddress();
     return OT_ERROR_NONE;
 }
 

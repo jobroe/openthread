@@ -167,7 +167,7 @@ public:
      */
     bool ShouldDeferHostSend(void);
 
-private:
+protected:
     typedef otError (NcpBase::*PropertyHandler)(void);
 
     struct PropertyHandlerEntry
@@ -250,7 +250,7 @@ private:
 #endif // OPENTHREAD_ENABLE_RAW_LINK_API
 
 #if OPENTHREAD_MTD || OPENTHREAD_FTD
-    static void HandleNetifStateChanged(uint32_t aFlags, void *aContext);
+    static void HandleStateChanged(uint32_t aFlags, void *aContext);
     void ProcessThreadChangedFlags(void);
 
 #if OPENTHREAD_FTD
@@ -293,6 +293,7 @@ private:
 
 #if OPENTHREAD_ENABLE_NCP_VENDOR_HOOK
     otError VendorCommandHandler(uint8_t aHeader, unsigned int aCommand);
+    void VendorHandleFrameRemovedFromNcpBuffer(NcpFrameBuffer::FrameTag aFrameTag);
 #endif // OPENTHREAD_ENABLE_NCP_VENDOR_HOOK
 
     otError CommandHandler_NOOP(uint8_t aHeader);
@@ -427,6 +428,7 @@ private:
     NCP_SET_PROP_HANDLER(MAC_SCAN_PERIOD);
     NCP_GET_PROP_HANDLER(MAC_SCAN_STATE);
     NCP_SET_PROP_HANDLER(MAC_SCAN_STATE);
+    NCP_GET_PROP_HANDLER(MAC_CCA_FAILURE_RATE);
 #if OPENTHREAD_ENABLE_MAC_FILTER
     NCP_GET_PROP_HANDLER(MAC_WHITELIST_ENABLED);
     NCP_SET_PROP_HANDLER(MAC_WHITELIST_ENABLED);
@@ -528,6 +530,7 @@ private:
     NCP_GET_PROP_HANDLER(THREAD_ACTIVE_DATASET);
     NCP_GET_PROP_HANDLER(THREAD_PENDING_DATASET);
 
+    NCP_GET_PROP_HANDLER(CNTR_ALL_MAC_COUNTERS);
     NCP_GET_PROP_HANDLER(CNTR_TX_PKT_TOTAL);
     NCP_GET_PROP_HANDLER(CNTR_TX_PKT_ACK_REQ);
     NCP_GET_PROP_HANDLER(CNTR_TX_PKT_ACKED);
@@ -588,6 +591,15 @@ private:
     NCP_SET_PROP_HANDLER(JAM_DETECT_BUSY);
     NCP_GET_PROP_HANDLER(JAM_DETECT_HISTORY_BITMAP);
 #endif
+
+#if OPENTHREAD_ENABLE_CHANNEL_MONITOR
+    NCP_GET_PROP_HANDLER(CHANNEL_MONITOR_SAMPLE_INTERVAL);
+    NCP_GET_PROP_HANDLER(CHANNEL_MONITOR_RSSI_THRESHOLD);
+    NCP_GET_PROP_HANDLER(CHANNEL_MONITOR_SAMPLE_WINDOW);
+    NCP_GET_PROP_HANDLER(CHANNEL_MONITOR_SAMPLE_COUNT);
+    NCP_GET_PROP_HANDLER(CHANNEL_MONITOR_CHANNEL_QUALITY);
+#endif
+
 #if OPENTHREAD_ENABLE_LEGACY
     NCP_GET_PROP_HANDLER(NEST_LEGACY_ULA_PREFIX);
     NCP_SET_PROP_HANDLER(NEST_LEGACY_ULA_PREFIX);
@@ -605,6 +617,7 @@ private:
     NCP_SET_PROP_HANDLER(NET_PSKC);
 
     NCP_GET_PROP_HANDLER(THREAD_CHILD_TABLE);
+    NCP_GET_PROP_HANDLER(THREAD_CHILD_TABLE_ADDRESSES);
     NCP_GET_PROP_HANDLER(THREAD_ROUTER_TABLE);
     NCP_GET_PROP_HANDLER(THREAD_CHILD_COUNT_MAX);
     NCP_SET_PROP_HANDLER(THREAD_CHILD_COUNT_MAX);
@@ -674,7 +687,6 @@ protected:
     SpinelDecoder mDecoder;
     bool mHostPowerStateInProgress;
 
-private:
     enum
     {
         kTxBufferSize = OPENTHREAD_CONFIG_NCP_TX_BUFFER_SIZE,  // Tx Buffer size (used by mTxFrameBuffer).

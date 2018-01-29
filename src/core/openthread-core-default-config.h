@@ -284,11 +284,21 @@
 /**
  * @def OPENTHREAD_CONFIG_IP_ADDRS_PER_CHILD
  *
- * The minimum number of supported IPv6 address registrations per child.
+ * The maximum number of supported IPv6 address registrations per child.
  *
  */
 #ifndef OPENTHREAD_CONFIG_IP_ADDRS_PER_CHILD
 #define OPENTHREAD_CONFIG_IP_ADDRS_PER_CHILD                    4
+#endif
+
+/**
+ * @def OPENTHREAD_CONFIG_IP_ADDRS_TO_REGISTER
+ *
+ * The maximum number of IPv6 address registrations for MTD.
+ *
+ */
+#ifndef OPENTHREAD_CONFIG_IP_ADDRS_TO_REGISTER
+#define OPENTHREAD_CONFIG_IP_ADDRS_TO_REGISTER                  (OPENTHREAD_CONFIG_IP_ADDRS_PER_CHILD)
 #endif
 
 /**
@@ -804,6 +814,17 @@
 #endif
 
 /**
+ * @def OPENTHREAD_CONFIG_NCP_SPINEL_ENCRYPTER_EXTRA_DATA_SIZE
+ *
+ *  The size of extra data to be allocated in UART buffer,
+ *  needed by NCP Spinel Encrypter.
+ *
+ */
+#ifndef OPENTHREAD_CONFIG_NCP_SPINEL_ENCRYPTER_EXTRA_DATA_SIZE
+#define OPENTHREAD_CONFIG_NCP_SPINEL_ENCRYPTER_EXTRA_DATA_SIZE  0
+#endif
+
+/**
  * @def OPENTHREAD_CONFIG_PLATFORM_ASSERT_MANAGEMENT
  *
  * The assert is managed by platform defined logic when this flag is set.
@@ -912,7 +933,67 @@
 #define OPENTHREAD_CONFIG_ENABLE_STEERING_DATA_SET_OOB          0
 #endif
 
-/*
+/**
+ * @def OPENTHREAD_CONFIG_CCA_FAILURE_RATE_AVERAGING_WINDOW
+ *
+ * OpenThread's MAC implementation maintains the average failure rate of CCA (Clear Channel Assessment) operation on
+ * frame transmissions. This value specifies the window (in terms of number of transmissions or samples) over which the
+ * average rate is maintained. Practically, the average value can be considered as the percentage of CCA failures in
+ * (approximately) last AVERAGING_WINDOW frame transmissions.
+ *
+ */
+#ifndef OPENTHREAD_CONFIG_CCA_FAILURE_RATE_AVERAGING_WINDOW
+#define OPENTHREAD_CONFIG_CCA_FAILURE_RATE_AVERAGING_WINDOW     512
+#endif
+
+/**
+ * @def OPENTHREAD_CONFIG_CHANNEL_MONITOR_SAMPLE_INTERVAL
+ *
+ * The sample interval in milliseconds used by Channel Monitoring feature.
+
+ * When enabled, a zero-duration Energy Scan is performed, collecting a single RSSI sample per channel during each
+ * interval.
+ *
+ * Applicable only if Channel Monitoring feature is enabled (i.e., `OPENTHREAD_ENABLE_CHANNEL_MONITOR` is set).
+ *
+ */
+#ifndef OPENTHREAD_CONFIG_CHANNEL_MONITOR_SAMPLE_INTERVAL
+#define OPENTHREAD_CONFIG_CHANNEL_MONITOR_SAMPLE_INTERVAL       41000
+#endif
+
+/**
+ * @def OPENTHREAD_CONFIG_CHANNEL_MONITOR_RSSI_THRESHOLD
+ *
+ * The RSSI threshold in dBm used by Channel Monitoring feature.
+ *
+ * The RSSI samples are compared with the given threshold. Channel monitoring reports the average rate of RSSI samples
+ * that are above this threshold within an observation window (per channel).
+ *
+ * It is recommended that this value is set to same value as the CCA threshold used by radio.
+ *
+ * Applicable only if Channel Monitoring feature is enabled (i.e., `OPENTHREAD_ENABLE_CHANNEL_MONITOR` is set).
+ *
+ */
+#ifndef OPENTHREAD_CONFIG_CHANNEL_MONITOR_RSSI_THRESHOLD
+#define OPENTHREAD_CONFIG_CHANNEL_MONITOR_RSSI_THRESHOLD        -75
+#endif
+
+/**
+ * @def OPENTHREAD_CONFIG_CHANNEL_MONITOR_SAMPLE_WINDOW
+ *
+ * The averaging sample window length (in units of channel sample interval) used by Channel Monitoring feature.
+ *
+ * Channel monitoring will sample all channels every sample interval. It maintains the average rate of RSSI samples
+ * that are above the RSSI threshold within (approximately) this sample window.
+ *
+ * Applicable only if Channel Monitoring feature is enabled (i.e., `OPENTHREAD_ENABLE_CHANNEL_MONITOR` is set).
+ *
+ */
+#ifndef OPENTHREAD_CONFIG_CHANNEL_MONITOR_SAMPLE_WINDOW
+#define OPENTHREAD_CONFIG_CHANNEL_MONITOR_SAMPLE_WINDOW         960
+#endif
+
+/**
  * @def OPENTHREAD_CONFIG_CHILD_SUPERVISION_INTERVAL
  *
  * The default supervision interval in seconds used by parent. Set to zero to disable the supervision process on the
@@ -1079,7 +1160,27 @@
 #define OPENTHREAD_CONFIG_MLE_SEND_LINK_REQUEST_ON_ADV_TIMEOUT  0
 #endif
 
-/*
+/**
+ * @def OPENTHREAD_CONFIG_MLE_LINK_REQUEST_MARGIN_MIN
+ *
+ * Specifies the minimum link margin in dBm required before attempting to establish a link with a neighboring router.
+ *
+ */
+#ifndef OPENTHREAD_CONFIG_MLE_LINK_REQUEST_MARGIN_MIN
+#define OPENTHREAD_CONFIG_MLE_LINK_REQUEST_MARGIN_MIN           10
+#endif
+
+/**
+ * @def OPENTHREAD_CONFIG_MLE_PARTITION_MERGE_MARGIN_MIN
+ *
+ * Specifies the minimum link margin in dBm required before attempting to merge to a different partition.
+ *
+ */
+#ifndef OPENTHREAD_CONFIG_MLE_PARTITION_MERGE_MARGIN_MIN
+#define OPENTHREAD_CONFIG_MLE_PARTITION_MERGE_MARGIN_MIN        10
+#endif
+
+/**
  * @def OPENTHREAD_CONFIG_ENABLE_DEBUG_UART
  *
  * Enable the "Debug Uart" platform feature.

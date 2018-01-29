@@ -79,6 +79,7 @@ public:
         kInterfaceIdentifierSize   = 8,  ///< Interface Identifier size in bytes.
         kIp6AddressStringSize      = 40, ///< Max buffer size in bytes to store an IPv6 address in string format.
         kMeshLocalPrefixLength     = 64, ///< Length of Thread mesh local prefix.
+        kMeshLocalPrefixSize       = 8,  ///< Mesh local prefix size in bytes.
     };
 
     /**
@@ -95,6 +96,12 @@ public:
         kOrgLocalScope       = 8,  ///< Organization-Local scope
         kGlobalScope         = 14, ///< Global scope
     };
+
+    /**
+     * This method clears the IPv6 address by setting it to the Unspecified Address "::".
+     *
+     */
+    void Clear(void);
 
     /**
      * This method indicates whether or not the IPv6 address is the Unspecified Address.
@@ -203,6 +210,15 @@ public:
      *
      */
     bool IsRealmLocalAllMplForwarders(void) const;
+
+    /**
+     * This method indicates whether or not the IPv6 address is multicast larger than realm local.
+     *
+     * @retval TRUE   If the IPv6 address is multicast larger than realm local.
+     * @retval FALSE  If the IPv6 address is not multicast or the scope is not larger than realm local.
+     *
+     */
+    bool IsMulticastLargerThanRealmLocal(void) const;
 
     /**
      * This method indicates whether or not the IPv6 address is a RLOC address.

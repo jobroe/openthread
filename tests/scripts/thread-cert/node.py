@@ -194,6 +194,12 @@ class Node:
     def get_addrs(self):
         return self.interface.get_addrs()
 
+    def get_addr(self, prefix):
+        return self.interface.get_addr(prefix)
+
+    def get_eidcaches(self):
+        return self.interface.get_eidcaches()
+
     def add_service(self, enterpriseNumber, serviceData, serverData):
         self.interface.add_service(enterpriseNumber, serviceData, serverData)
 

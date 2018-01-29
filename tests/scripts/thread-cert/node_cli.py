@@ -32,6 +32,7 @@ import sys
 import time
 import pexpect
 import re
+import ipaddress
 
 import config
 
@@ -387,6 +388,32 @@ class otCli:
                 break
 
         return addrs
+
+    def get_addr(self, prefix):
+        network = ipaddress.ip_network(unicode(prefix))
+        addrs = self.get_addrs()
+
+        for addr in addrs:
+            ipv6_address = ipaddress.ip_address(addr.decode("utf-8"))
+            if ipv6_address in network:
+                return ipv6_address.exploded.encode('utf-8')
+
+        return None
+
+    def get_eidcaches(self):
+        eidcaches = []
+        self.send_command('eidcache')
+
+        while True:
+            i = self.pexpect.expect(['([a-fA-F0-9\:]+) ([a-fA-F0-9]+)\r\n', 'Done'])
+            if i == 0:
+                eid = self.pexpect.match.groups()[0].decode("utf-8")
+                rloc = self.pexpect.match.groups()[1].decode("utf-8")
+                eidcaches.append((eid, rloc))
+            elif i == 1:
+                break
+
+        return eidcaches
 
     def add_service(self, enterpriseNumber, serviceData, serverData):
         cmd = 'service add ' + enterpriseNumber + ' ' + serviceData+ ' '  + serverData

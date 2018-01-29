@@ -93,6 +93,8 @@ public:
         return NULL;
     }
 
+    bool IsMinimalChild(uint16_t) { return false; }
+
     void RestoreChildren(void) { }
     otError RemoveStoredChild(uint16_t) {return OT_ERROR_NOT_IMPLEMENTED; }
     otError StoreChild(uint16_t) {return OT_ERROR_NOT_IMPLEMENTED; }
@@ -134,6 +136,10 @@ public:
 
     otError GetMaxChildTimeout(uint32_t &) { return OT_ERROR_NOT_IMPLEMENTED; }
 
+    bool HasSleepyChildrenSubscribed(const Ip6::Address &) { return false; }
+
+    bool IsSleepyChildSubscribed(const Ip6::Address &, Child &) { return false; }
+
 private:
     otError HandleDetachStart(void) { return OT_ERROR_NONE; }
     otError HandleChildStart(AttachMode) { return OT_ERROR_NONE; }
@@ -149,6 +155,7 @@ private:
     otError HandleDataRequest(const Message &, const Ip6::MessageInfo &) { return OT_ERROR_DROP; }
     otError HandleNetworkDataUpdateRouter(void) { return OT_ERROR_NONE; }
     otError HandleDiscoveryRequest(const Message &, const Ip6::MessageInfo &) { return OT_ERROR_DROP; }
+    void HandlePartitionChange(void) { }
 
     void StopAdvertiseTimer(void) { }
     otError ProcessRouteTlv(const RouteTlv &aRoute) { OT_UNUSED_VARIABLE(aRoute); return OT_ERROR_NONE; }

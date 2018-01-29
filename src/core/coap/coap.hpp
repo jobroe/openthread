@@ -610,6 +610,8 @@ public:
     /**
      * This method aborts CoAP transactions associated with given handler and context.
      *
+     * The associated response handler will be called with OT_ERROR_ABORT.
+     *
      * @param[in]  aHandler  A function pointer that should be called when the transaction ends.
      * @param[in]  aContext  A pointer to arbitrary context information.
      *
@@ -747,7 +749,7 @@ public:
      * @param[in] aInstance      A reference to the OpenThread instance.
      *
      */
-    Coap(Instance &aInstance);
+    explicit Coap(Instance &aInstance);
 
 private:
     static void HandleRetransmissionTimer(Timer &aTimer);
@@ -769,7 +771,7 @@ public:
      * @param[in] aInstance      A reference to the OpenThread instance.
      *
      */
-    ApplicationCoap(Instance &aInstance);
+    explicit ApplicationCoap(Instance &aInstance);
 
 private:
     static void HandleRetransmissionTimer(Timer &aTimer);

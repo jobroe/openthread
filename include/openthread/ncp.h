@@ -184,7 +184,7 @@ void otNcpHandleLegacyNodeDidJoin(const otExtAddress *aExtAddr);
  * This callback is invoked by the legacy stack to notify that the
  * legacy ULA prefix has changed.
  *
- * param[in]    aUlaPrefix  A pointer to the received ULA prefix.
+ * @param[in]    aUlaPrefix  A pointer to the received ULA prefix.
  *
  */
 void otNcpHandleDidReceiveNewLegacyUlaPrefix(const uint8_t *aUlaPrefix);
@@ -208,9 +208,9 @@ void otNcpRegisterLegacyHandlers(const otNcpLegacyHandlers *aHandlers);
  * @param[in]  aLogLevel   The log level.
  * @param[in]  aLogRegion  The log region.
  * @param[in]  aFormat     A pointer to the format string.
- * @param[in]  ap          va_list matching aFormat.
+ * @param[in]  aArgs       va_list matching aFormat.
  */
-void otNcpPlatLogv(otLogLevel aLogLevel, otLogRegion aLogRegion, const char *aFormat, va_list ap);
+void otNcpPlatLogv(otLogLevel aLogLevel, otLogRegion aLogRegion, const char *aFormat, va_list aArgs);
 
 /**
  * @}

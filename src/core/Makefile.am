@@ -90,6 +90,7 @@ libopenthread_mtd_a_CPPFLAGS        = \
 SOURCES_COMMON                      = \
     api/coap_api.cpp                  \
     api/commissioner_api.cpp          \
+    api/channel_monitor_api.cpp       \
     api/child_supervision_api.cpp     \
     api/crypto_api.cpp                \
     api/border_router_api.cpp         \
@@ -119,6 +120,7 @@ SOURCES_COMMON                      = \
     common/instance.cpp               \
     common/logging.cpp                \
     common/locator.cpp                \
+    common/notifier.cpp               \
     common/message.cpp                \
     common/tasklet.cpp                \
     common/timer.cpp                  \
@@ -169,6 +171,8 @@ SOURCES_COMMON                      = \
     thread/link_quality.cpp           \
     thread/lowpan.cpp                 \
     thread/mesh_forwarder.cpp         \
+    thread/mesh_forwarder_ftd.cpp     \
+    thread/mesh_forwarder_mtd.cpp     \
     thread/mle.cpp                    \
     thread/mle_router.cpp             \
     thread/network_data.cpp           \
@@ -181,6 +185,7 @@ SOURCES_COMMON                      = \
     thread/thread_netif.cpp           \
     thread/tmf_proxy.cpp              \
     thread/topology.cpp               \
+    utils/channel_monitor.cpp         \
     utils/child_supervision.cpp       \
     utils/jam_detector.cpp            \
     utils/missing_strlcpy.c           \
@@ -213,6 +218,7 @@ HEADERS_COMMON                      = \
     common/locator.hpp                \
     common/logging.hpp                \
     common/message.hpp                \
+    common/notifier.hpp               \
     common/owner-locator.hpp          \
     common/settings.hpp               \
     common/new.hpp                    \
@@ -291,6 +297,7 @@ HEADERS_COMMON                      = \
     thread/thread_uri_paths.hpp       \
     thread/tmf_proxy.hpp              \
     thread/topology.hpp               \
+    utils/channel_monitor.hpp         \
     utils/child_supervision.hpp       \
     utils/slaac_address.hpp           \
     utils/jam_detector.hpp            \

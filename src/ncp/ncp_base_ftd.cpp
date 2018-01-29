@@ -210,6 +210,43 @@ exit:
     return error;
 }
 
+otError NcpBase::GetPropertyHandler_THREAD_CHILD_TABLE_ADDRESSES(void)
+{
+    otError error = OT_ERROR_NONE;
+    otChildInfo childInfo;
+    uint8_t maxChildren;
+    otIp6Address ip6Address;
+    otChildIp6AddressIterator iterator = OT_CHILD_IP6_ADDRESS_ITERATOR_INIT;
+
+    maxChildren = otThreadGetMaxAllowedChildren(mInstance);
+
+    for (uint8_t childIndex = 0; childIndex < maxChildren; childIndex++)
+    {
+        if ((otThreadGetChildInfoByIndex(mInstance, childIndex, &childInfo) != OT_ERROR_NONE) ||
+            childInfo.mIsStateRestoring)
+        {
+            continue;
+        }
+
+        SuccessOrExit(error = mEncoder.OpenStruct());
+
+        SuccessOrExit(error = mEncoder.WriteEui64(childInfo.mExtAddress));
+        SuccessOrExit(error = mEncoder.WriteUint16(childInfo.mRloc16));
+
+        iterator = OT_CHILD_IP6_ADDRESS_ITERATOR_INIT;
+
+        while (otThreadGetChildNextIp6Address(mInstance, childIndex, &iterator, &ip6Address) == OT_ERROR_NONE)
+        {
+            SuccessOrExit(error = mEncoder.WriteIp6Address(ip6Address));
+        }
+
+        SuccessOrExit(error = mEncoder.CloseStruct());
+    }
+
+exit:
+    return error;
+}
+
 otError NcpBase::GetPropertyHandler_THREAD_ROUTER_ROLE_ENABLED(void)
 {
     return mEncoder.WriteBool(otThreadIsRouterRoleEnabled(mInstance));
@@ -390,8 +427,6 @@ otError NcpBase::InsertPropertyHandler_THREAD_JOINERS(void)
     const char *aPSKd = NULL;
     uint32_t joinerTimeout = 0;
 
-    VerifyOrExit(mAllowLocalNetworkDataChange == true, error = OT_ERROR_INVALID_STATE);
-
     SuccessOrExit(error = mDecoder.ReadUtf8(aPSKd));
     SuccessOrExit(error = mDecoder.ReadUint32(joinerTimeout));
 
@@ -400,13 +435,11 @@ otError NcpBase::InsertPropertyHandler_THREAD_JOINERS(void)
         eui64 = NULL;
     }
 
-
     error = otCommissionerAddJoiner(mInstance, eui64, aPSKd, joinerTimeout);
 
 exit:
     return error;
 }
-
 #endif // OPENTHREAD_ENABLE_COMMISSIONER
 
 otError NcpBase::SetPropertyHandler_THREAD_LOCAL_LEADER_WEIGHT(void)

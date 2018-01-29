@@ -218,6 +218,7 @@ public:
         kSubTypeMleGeneral             = 6,  ///< General MLE
         kSubTypeJoinerFinalizeResponse = 7,  ///< Joiner Finalize Response
         kSubTypeMleChildUpdateRequest  = 8,  ///< MLE Child Update Request
+        kSubTypeMleDataResponse        = 9,  ///< MLE Data Response
     };
 
     enum
@@ -334,7 +335,7 @@ public:
      * This method returns whether or not the message is of MLE subtype.
      *
      * @retval TRUE   If message is of MLE subtype.
-     * @retval FLASE  If message is not of MLE subtype.
+     * @retval FALSE  If message is not of MLE subtype.
      *
      */
     bool IsSubTypeMle(void) const;
@@ -1140,7 +1141,7 @@ public:
      * This constructor initializes the object.
      *
      */
-    MessagePool(Instance &aInstance);
+    explicit MessagePool(Instance &aInstance);
 
     /**
      * This method is used to obtain a new message. The default priority `kDefaultMessagePriority`
